@@ -1,0 +1,22 @@
+- shell: "vsish -e set /net/portsets/{{DvsPortset}}/ports/{{outer_item.portId}}/vmxnet3/latencyInfo 0"
+  register: output 
+  ignore_errors: True
+
+
+
+- name: Pause for 2 seconds
+  ansible.builtin.pause:
+    seconds: 2
+
+- shell: "vsish -e set /net/portsets/{{DvsPortset}}/ports/{{outer_item.portId}}/vmxnet3/latencyInfo 1 0 1"
+  register: output 
+
+
+
+
+
+
+
+# vsish -e set /net/portsets/DvsPortset-1/ports/134217777/vmxnet3/latencyInfo 0
+# vsish -e set /net/portsets/DvsPortset-1/ports/134217777/vmxnet3/latencyInfo 1 0 1
+# vsish -e get /net/portsets/DvsPortset-1/ports/134217777/vmxnet3/latencyInfo

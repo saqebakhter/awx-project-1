@@ -1,0 +1,74 @@
+---
+- name: Loop through JSON and make calls to items with client name IEVD
+  hosts: localhost
+  gather_facts: yes
+  tasks:
+    - name: Set your JSON data
+      set_fact:
+        json_data: 
+          "DvsPortset-1": 
+            dvsName: "50 0a 21 21 c4 2c 04 be-5c a3 e5 c3 94 39 53 90"
+            alias: "PRP-Primary"
+            portCount: 
+              numPorts: 9216
+              numAvailablePorts: 9185
+            ports:
+              - dvPortId: ""
+                client: "Management"
+                portId: "100663307"
+                uplink: "n/a"
+                vid: "N/A"
+                vni: "N/A"
+                mac: "00:00:00:00:00:00"
+              - dvPortId: ""
+                client: "ievd-111"
+                portId: "100663307"
+                uplink: "n/a"
+                vid: "N/A"
+                vni: "N/A"
+                mac: "00:00:00:00:00:00"
+
+              - dvPortId: ""
+                client: "ievd-222"
+                portId: "100663307"
+                uplink: "n/a"
+                vid: "N/A"
+                vni: "N/A"
+                mac: "00:00:00:00:00:00"
+
+    - name: Loop through JSON and make calls to items with client name IEVD
+      shell: echo {{ item.portId }}
+      register: latency_info
+      with_items: "{{ json_data['DvsPortset-1'].ports }}"
+      when: "'ievd' in item.client"
+
+
+    - name: set fact report_string
+      set_fact:
+        var: ansible_date_time
+        report_string: "Report Start: {{ ansible_date_time.iso8601 }} {{ ansible_date_time.epoch }}"
+
+    - name: Print out ports
+      set_fact:
+        report_string: "{{ report_string }}\n  ------\n{{inventory_hostname}}: {{ item.item.client }}\n------\n{{ item.stdout }}"
+
+      with_items: "{{ latency_info.results   }} "
+      when: item.stdout is defined
+        
+
+
+
+    - name: print report_string 
+      debug: 
+        msg: "{{ report_string }}"
+
+
+    - name: copy report to host
+      copy: 
+        content: "{{ report_string }}"
+        dest: /opt/outputs/report.txt
+      delegate_to: 10.40.84.27
+      remote_user: root
+      vars:
+        ansible_ssh_private_key_file: "/Users/sakhter/.ssh/id_rsa"
+      when: "'ievd' in report_string"

@@ -1,0 +1,26 @@
+---
+- name: get instances list
+  hosts: localhost
+  remote_user: root
+  tasks:
+  - name: Gather all registered virtual machines
+    community.vmware.vmware_vm_info:
+      hostname: '{{ vcenter_hostname }}'
+      username: '{{ vcenter_username }}'
+      password: '{{ vcenter_password }}'
+      validate_certs: false
+      folder: "/Audi/vm/vplc-prp"
+
+    delegate_to: localhost
+    register: vminfo
+
+  - name: Loop through JSON and make capture relevant info
+    include_tasks: inner-prp.yml
+    loop: "{{ vminfo.virtual_machines }}"
+    loop_control:
+      loop_var: outer_item
+      index_var: outer_index
+    when: "outer_item.power_state in 'poweredOn'"
+
+ 
+

@@ -1,0 +1,24 @@
+---
+- name: get instances list
+  hosts: all 
+  tasks:
+  - shell: nsxdp-cli vswitch instance list --json-output
+    register: vswitch_list 
+    
+  - set_fact: 
+      vswitch_list_json: "{{ vswitch_list.stdout | from_json }}"
+      
+  
+  - name: Create ports dictionary (this is now per port)
+    set_fact:
+      ports: "{{ vswitch_list_json | json_query('*.ports') }}"
+
+
+
+  - name: Loop through JSON and make calls to items with client name IEVD
+    include_tasks: inner-teaming.yml
+    loop: "{{ vminfo.virtual_machines }}"
+    loop_control:
+      loop_var: outer_item
+    loop: "{{ports[0]}}"
+    when: "'ievd' in outer_item.client or 'vPLC' in outer_item.client"    

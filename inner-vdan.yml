@@ -1,0 +1,17 @@
+- shell: nsxdp-cli ens port list
+  register: fcports 
+  
+
+- name: parse output of ports
+  set_fact:
+    fcports_json: "{{fcports.stdout | community.general.jc('asciitable') }}"
+
+
+
+- name: Loop through JSON and make calls to items with client name IEVD
+  include_tasks: inner-vdan2.yml
+  loop: "{{ fcports_json}}"
+  loop_control:
+    loop_var: fcloop  
+  when: "fcloop.portid in outer_item.portId"    
+

@@ -1,0 +1,55 @@
+- name: get index value 
+  set_fact:
+    env_id: '{{ outer_item.guest_name | regex_search(qry) }}'
+  vars:
+    qry: '[0-9]'
+
+
+- name: set index value with loop
+  set_fact:
+    ipAddrvPLC: "{{outer_index + 2}}"
+    
+
+- name: print env_id value 
+  debug:
+    msg: "vplc vm name : {{outer_item.guest_name}} env_id :  {{ env_id }} outer_index : {{ outer_index }} ipAddr: {{ipAddrvPLC}}"
+
+
+- name: set irq to cpu1 on vPLC
+  shell: "echo '1' >> /proc/irq/59/smp_affinity_list"
+  delegate_to: "{{outer_item.ip_address}}"
+  remote_user: root
+
+
+- name: enable prp on vPLC
+  shell: "/root/enable_prp.sh {{ env_id }} {{outer_item.mac_address[1]}} {{ ipAddrvPLC }}"
+  delegate_to: "{{outer_item.ip_address}}"
+  remote_user: root
+  register: enable_prp_output
+
+
+- name: Gather all registered virtual machines
+  community.vmware.vmware_vm_info:
+    hostname: '{{ vcenter_hostname }}'
+    username: '{{ vcenter_username }}'
+    password: '{{ vcenter_password }}'
+    validate_certs: false
+    folder: "/Audi/vm/vplc-prp-io"
+
+  delegate_to: localhost
+  register: vminfo_io
+
+
+- name: search string
+  set_fact:
+    search: "-{{env_id}}"
+
+
+
+- name: Loop IO VMs, and enable them.
+  include_tasks: inner-prp2.yml
+  when: "search in item.guest_name"    
+  loop: "{{ vminfo_io.virtual_machines }}"
+  loop_control:
+    index_var: io_index  
+    

@@ -1,0 +1,18 @@
+
+- set_fact: 
+    listVars: "{{fcloop.enspid_txq_rxq_hwmac | split }}"    
+
+- name: set mac 
+  set_fact:
+    mac_address:  "{{listVars[3]}}"
+
+- name: set fc port  
+  set_fact:
+    fcportid:  "{{listVars[0]}}"
+
+
+- debug: 
+    msg: "nsxdp-cli ens prp vdan set -s 0 -p {{fcportid}} -v {{outer_item.vid}} -a {{mac_address}}"    
+
+- shell: "nsxdp-cli ens prp vdan set -s 0 -p {{fcportid}} -v {{outer_item.vid}} -a {{mac_address}}"    
+  register: output

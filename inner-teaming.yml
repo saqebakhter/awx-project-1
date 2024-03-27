@@ -1,0 +1,31 @@
+- shell: "net-dvs -s com.vmware.vswitch.port.mcast.user.addresses=true -p {{outer_item.dvPortId}} PRP-Primary"
+  register: output 
+
+- shell: "net-dvs -s com.vmware.common.port.profinet=1 -p {{outer_item.dvPortId}} PRP-Primary"
+  register: output 
+
+- shell: "net-dvs -s com.vmware.vswitch.port.priority.retain=true -p {{outer_item.dvPortId}} PRP-Primary"
+  register: output 
+
+- shell: "nsxdp-cli vswitch teaming policy set -a 'Uplink 3' -s 'Uplink 1' -s 'Uplink 2' -b LB_SRCID -p {{outer_item.dvPortId}} -dvs PRP-Primary"
+  register: output 
+
+# - name: parse output of ports
+#   set_fact:
+#     fcports_json: "{{fcports.stdout | community.general.jc('asciitable') }}"
+
+
+
+# - name: Loop through JSON and make calls to items with client name IEVD
+#   include_tasks: inner-vdan2.yml
+#   loop: "{{ fcports_json}}"
+#   loop_control:
+#     loop_var: fcloop  
+#   when: "fcloop.portid in outer_item.portId"    
+
+
+
+# echo "net-dvs -s com.vmware.vswitch.port.mcast.user.addresses=true -p $dvId $switchName"
+# echo "net-dvs -s com.vmware.common.port.profinet=1 -p $dvId $switchName"
+# echo "net-dvs -s com.vmware.vswitch.port.priority.retain=true -p $dvId $switchName "
+# echo "nsxdp-cli vswitch teaming policy set -a 'Uplink 3' -s 'Uplink 1' -s 'Uplink 2' -b LB_SRCID -p $dvId -dvs $switchName"

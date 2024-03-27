@@ -1,0 +1,61 @@
+---
+- name: get instances list
+  hosts: localhost
+
+  remote_user: root
+  tasks:
+
+
+  - name: Gather all registered virtual machines
+    community.vmware.vmware_vm_info:
+      hostname: '{{ vcenter_hostname }}'
+      username: '{{ vcenter_username }}'
+      password: '{{ vcenter_password }}'
+      validate_certs: false
+      folder: "/Audi/vm/vplc-prp"
+
+    delegate_to: localhost
+    register: vminfo
+
+  - name: Loop through list of hosts, and disable prp-vplc
+
+    shell: "/root/disable_prp.sh"
+    delegate_to: "{{item.ip_address}}"
+    remote_user: root
+    register: output
+    loop: "{{ vminfo.virtual_machines }}"
+    when: "item.power_state in 'poweredOn'"
+
+
+
+
+  - name: Gather all registered virtual machines
+    community.vmware.vmware_vm_info:
+      hostname: '{{ vcenter_hostname }}'
+      username: '{{ vcenter_username }}'
+      password: '{{ vcenter_password }}'
+      validate_certs: false
+      folder: "/Audi/vm/vplc-prp-io"
+
+    delegate_to: localhost
+    register: vminfo_io
+
+  - name: Loop through list of hosts, and disable prp-io
+
+    shell: "/root/disable_prp.sh"
+    delegate_to: "{{item.ip_address}}"
+    remote_user: root
+    register: output
+    loop: "{{ vminfo_io.virtual_machines }}"
+    when: "item.power_state in 'poweredOn'"
+
+
+
+
+  - name: fini
+    debug:
+      msg: "done script"
+
+    
+ 
+

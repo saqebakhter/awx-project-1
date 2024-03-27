@@ -1,0 +1,58 @@
+---
+- name: get instances list
+  hosts: all 
+  tasks:
+  - shell: nsxdp-cli vswitch instance list --json-output
+    register: vswitch_list 
+    
+  - set_fact: 
+      vswitch_list_json: "{{ vswitch_list.stdout | from_json }}"
+
+  - set_fact: 
+      DVSNameSetList: "{{ vswitch_list_json.keys()|list }}"
+
+
+  - set_fact: 
+      DvsPortset: "{{ DVSNameSetList[0] }}"
+     
+  
+  - name: Create ports dictionary (this is now per port)
+    set_fact:
+      ports: "{{ vswitch_list_json | json_query('*.ports') }}"
+
+
+  - name: Loop through JSON and make calls to items with client name IEVD
+    shell: "vsish -e get /net/portsets/{{DvsPortset}}/ports/{{ item.portId }}/vmxnet3/latencyInfo"
+    register: latency_info
+    loop: "{{ports[0]}}"
+    when: "'ievd' in item.client or 'vPLC' in item.client"    
+
+
+  - name: set fact report_string
+    set_fact:
+      var: ansible_date_time
+      report_string: "Report Start: {{ ansible_date_time.iso8601 }} {{ ansible_date_time.epoch }}"
+
+
+  - name: Print out ports
+    set_fact:
+      report_string: "{{ report_string }}\n  ------\n{{inventory_hostname}}: {{ item.item.client }}\n------\n{{ item.stdout }}"
+    with_items: "{{ latency_info.results   }} "
+    when: item.stdout is defined
+
+  - shell: nsxdp-cli ens latency lcore dump
+    register: lcore_dump 
+    
+  - set_fact: 
+      report_string: "{{ report_string }}\n  ------\n{{inventory_hostname}}:------\n{{ lcore_dump.stdout }}"
+
+
+  - name: copy report to host
+    copy: 
+      content: "{{ report_string }}"
+      dest: "/opt/outputs/latencyinfo/report_{{inventory_hostname}}_{{ansible_date_time.epoch}}.txt"
+    delegate_to: 10.40.84.27
+    remote_user: root
+    when: "'ievd' in report_string or 'vPLC' in report_string"    
+
+      

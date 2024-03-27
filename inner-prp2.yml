@@ -1,0 +1,24 @@
+- name: set io IP addr 
+  set_fact:
+    ipAddrvIO: "{{ env_id|int + outer_index + 20 + io_index }}"
+
+
+- name: print IO env_id value 
+  debug:
+    msg: "io vm name :{{item.guest_name}} env_id: {{env_id}} outer_index: {{outer_index}} ipAddrvIO: {{ipAddrvIO}}"
+
+
+
+- name: enable prp on io
+  shell: "/root/enable_prp.sh {{ env_id }} {{outer_item.mac_address[1]}} {{ipAddrvIO}}"
+  delegate_to: "{{item.ip_address}}"
+  remote_user: root
+  register: output
+
+
+
+- name: enable prp on io
+  debug: 
+    msg: "echo '/root/enable_prp.sh {{ env_id }} {{outer_item.mac_address[1]}} {{ipAddrvIO}}' > /tmp/command.txt"
+
+

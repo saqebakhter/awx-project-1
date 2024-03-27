@@ -1,0 +1,43 @@
+---
+- name: get instances list
+  hosts: all 
+  tasks:
+  - shell: net-stats -A -t WwQqihVcE -i 10
+    register: net_stats_output 
+    
+  - set_fact: 
+      net_stats_json: "{{ net_stats_output.stdout | from_json }}"
+    
+
+  
+  - name: Create ports dictionary (this is now per port)
+    set_fact:
+      ports: "{{ net_stats_json['stats'][0]['ports'] }}"
+
+
+  - name: set fact report_string
+    set_fact:
+      var: ansible_date_time
+      report_string: "Report Start: {{ ansible_date_time.iso8601 }} {{ ansible_date_time.epoch }}\n------\n"
+
+
+
+  - name: Loop through JSON and make capture relevant info
+    set_fact:
+      report_string: "{{ report_string }}   {{inventory_hostname}}:\n   VM Name: {{ item.name }}\n      Port ID: {{ item.id }}\n      MAC: {{ item.mac }}\n      TX PPS: {{ item.txpps}}\n      RX PPS: {{ item.rxpps}}\n------\n"
+    loop: "{{ ports }}"
+    when: item.ens    
+
+
+
+
+  - name: copy report to host
+    copy: 
+      content: "{{ report_string }}"
+      dest: "/opt/outputs/report_pps_{{inventory_hostname}}_{{ansible_date_time.epoch}}.txt"
+    delegate_to: 10.40.84.27
+    remote_user: root
+    when: "'ievd' in report_string"    
+
+
+      
