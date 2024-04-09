@@ -51,7 +51,7 @@
     copy: 
       content: "{{ report_string }}"
       dest: "/opt/outputs/latencyinfo/report_{{inventory_hostname}}_{{ansible_date_time.epoch}}.txt"
-    delegate_to: 10.40.84.27
+    delegate_to: "{{ reportIp }}"
     remote_user: root
     when: "'ievd' in report_string or 'vPLC' in report_string"    
 

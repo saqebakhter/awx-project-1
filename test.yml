@@ -1,6 +1,6 @@
 ---
 - name: get instances list
-  hosts: 10.40.84.47
+  hosts: "{{reportIp}}"
   remote_user: root
   tasks:
   - shell: nsxdp-cli vswitch instance list --json-output
