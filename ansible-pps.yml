@@ -29,8 +29,6 @@
     when: item.ens    
 
 
-
-
   - name: copy report to host
     copy: 
       content: "{{ report_string }}"

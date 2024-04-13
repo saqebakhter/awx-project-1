@@ -42,9 +42,20 @@
 
   - shell: nsxdp-cli ens latency lcore dump
     register: lcore_dump 
-    
+
+  - shell: nsxdp-cli ens prp stats lcore list
+    register: lcore_dump_stats 
+
+  - shell: nsxdp-cli vswitch instance list
+    register: vswitch_instance_list 
+
+  - shell: nsxdp-cli ens port list
+    register: dpport_list 
+
   - set_fact: 
-      report_string: "{{ report_string }}\n  ------\n{{inventory_hostname}}:------\n{{ lcore_dump.stdout }}"
+      report_string: "{{ report_string }}\n  ------\n{{inventory_hostname}}:------\n
+      {{ lcore_dump.stdout }}\n{{ lcore_dump_stats.stdout }}\n
+      {{ vswitch_instance_list.stdout }}\n{{ dpport_list.stdout }}\n"
 
 
   - name: copy report to host
