@@ -10,20 +10,20 @@
 - name: debug
   debug:
     msg: "using 2 teaming setup"
-  when: teamingLinks == 2
+  when: teamingLinks == "2"
 
 - shell: "nsxdp-cli vswitch teaming policy set -a 'Uplink 3' -s 'Uplink 1' -s 'Uplink 2' -b LB_SRCID -p {{outer_item.dvPortId}} -dvs PRP-Primary"
   register: output 
-  when: teamingLinks == 2
+  when: teamingLinks == "2"
 
 - name: debug
   debug:
     msg: "using 4 teaming setup"
-  when: teamingLinks == 2
+  when: teamingLinks == "4"
 
 - shell: "nsxdp-cli vswitch teaming policy set -a 'Uplink 5' -s 'Uplink 1' -s 'Uplink 2'  -s 'Uplink 3'  -s 'Uplink 4' -b LB_SRCID -p {{outer_item.dvPortId}} -dvs PRP-Primary"
   register: output 
-  when: teamingLinks == 4
+  when: teamingLinks == "4"
 
 # - name: parse output of ports
 #   set_fact:
