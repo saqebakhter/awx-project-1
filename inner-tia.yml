@@ -1,0 +1,8 @@
+- shell: "net-dvs -s com.vmware.vswitch.port.mcast.user.addresses=true -p {{outer_item.dvPortId}} PRP-Primary"
+  register: output 
+
+- shell: "net-dvs -s com.vmware.common.port.profinet=1 -p {{outer_item.dvPortId}} PRP-Primary"
+  register: output 
+
+- shell: "net-dvs -s com.vmware.vswitch.port.priority.retain=true -p {{outer_item.dvPortId}} PRP-Primary"
+  register: output 
